@@ -14,16 +14,21 @@ export class UserController {
 
   async createUser(req: Request, res: Response): Promise<void> {
     try {
-      const createUserDto: CreateUserDto = plainToClass(CreateUserDto, req.body);
-      
-      const errors: ValidationError[] = await validate(createUserDto);
+      const createUserDto: CreateUserDto = plainToClass(
+        CreateUserDto,
+        req.body
+      );
+
+      const errors: Array<ValidationError> = await validate(createUserDto);
 
       if (errors.length > 0) {
         res.status(400).json({ errors });
         return;
       }
 
-      const { status, message } = await this.userService.createUser(createUserDto);
+      const { status, message } = await this.userService.createUser(
+        createUserDto
+      );
       res.status(status).json(message);
     } catch (error) {
       console.error(error);
@@ -33,48 +38,51 @@ export class UserController {
 
   async getUsers(req: Request, res: Response): Promise<void> {
     try {
-      const users = await this.userService.getUsers();
-      res.status(200).json({ status: 200, message: users });
+      const { status, message } = await this.userService.getUsers();
+      res.status(status).json({ message });
     } catch (error) {
       console.error("Error getting users:", error);
-      res.status(500).json({ status: 500, message: 'Error getting users' });
+      res.status(500).json({ status: 500, message: "Error getting users" });
     }
   }
 
   async getUserById(req: Request, res: Response): Promise<void> {
     try {
       const userId: string = req.params.userId;
-      const user = await this.userService.getUserById(userId);
-      
-      if (!user) {
-        res.status(404).json({ status: 404, message: 'User not found' });
-        return;
-      }
+      const { status, message } = await this.userService.getUserById(userId);
 
-      res.status(200).json({ status: 200, message: user });
+      res.status(status).json({ message });
     } catch (error) {
       console.error("Error getting user by ID:", error);
-      res.status(500).json({ status: 500, message: 'Error getting user by ID' });
+      res
+        .status(500)
+        .json({ status: 500, message: "Error getting user by ID" });
     }
   }
 
   async updateUser(req: Request, res: Response): Promise<void> {
     try {
       const userId: string = req.params.userId;
-      const updateUserDto: UpdateUserDto = plainToInstance(UpdateUserDto, req.body);
-      
-      const errors: ValidationError[] = await validate(updateUserDto);
+      const updateUserDto: UpdateUserDto = plainToInstance(
+        UpdateUserDto,
+        req.body
+      );
+
+      const errors: Array<ValidationError> = await validate(updateUserDto);
 
       if (errors.length > 0) {
         res.status(400).json({ errors });
         return;
       }
 
-      const { status, message } = await this.userService.updateUser(userId, updateUserDto);
+      const { status, message } = await this.userService.updateUser(
+        userId,
+        updateUserDto
+      );
       res.status(status).json(message);
     } catch (error) {
       console.error("Error updating user:", error);
-      res.status(500).json({ status: 500, message: 'Error updating user' });
+      res.status(500).json({ status: 500, message: "Error updating user" });
     }
   }
 
@@ -85,7 +93,7 @@ export class UserController {
       res.status(status).json(message);
     } catch (error) {
       console.error("Error deleting user:", error);
-      res.status(500).json({ status: 500, message: 'Error deleting user' });
+      res.status(500).json({ status: 500, message: "Error deleting user" });
     }
   }
 }

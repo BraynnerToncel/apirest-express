@@ -1,31 +1,29 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from "typeorm";
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Role } from '../role/role.entity';
 
-@Entity({ name: "users" })
+@Entity('users')
 export class User {
-  @PrimaryGeneratedColumn("uuid")
+  @PrimaryGeneratedColumn('uuid')
   userId: string;
 
-  @Column({ nullable: false })
-  userName: string;
+  @Column({ type: 'varchar', length: 32, nullable: false })
+  userFullName: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', length: 32, nullable: false })
+  userLastName: string;
+
+  @Column({ type: 'varchar', length: 24, nullable: false })
+  username: string;
+
+  @Column({ type: 'varchar', length: 32, nullable: false })
   userEmail: string;
 
-  @Column({ nullable: false })
+  @Column({ type: 'varchar', length: 150, nullable: false })
   userPassword: string;
 
-  @Column({ default: "user" })
-  role: string;
+  @Column({ type: 'boolean', default: true, nullable: false })
+  userState: boolean;
 
-  @CreateDateColumn()
-  createdAt: Date;
-
-  @UpdateDateColumn()
-  updatedAt: Date;
+  @ManyToOne(() => Role, (role) => role.user)
+  role: Role;
 }
