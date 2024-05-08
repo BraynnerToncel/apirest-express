@@ -7,3 +7,6 @@ export interface IPermission {
   permissionState: boolean;
   role: Array<IRole>;
 }
+export type ICreatePermission = Omit<IPermission, 'permissionId'  > 
+
+export type IUpdatePermission = Partial<ICreatePermission>;

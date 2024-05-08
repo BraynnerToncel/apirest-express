@@ -1,3 +1,4 @@
+import { PermissionServices } from './../api/permission/permission.service';
 import { Router } from "express";
 import express = require("express");
 import { AppDataSource } from "../data/database-config/data-source";
@@ -10,8 +11,11 @@ export class Server {
     this.setErrorHandler()
     this.app.use(options.router);
     console.log(process.env.DB_DATABASE);
+
     AppDataSource.initialize()
       .then(async () => {
+        const  permissionServices = new PermissionServices();
+        permissionServices.syncPermissions()
         this.app.listen(options.port, () => {
           console.log(`Server running on port ${options.port}`);
         });

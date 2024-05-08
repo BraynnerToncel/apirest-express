@@ -1,7 +1,7 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Role } from '../role/role.entity';
 
-@Entity('users')
+@Entity()
 export class User {
   @PrimaryGeneratedColumn('uuid')
   userId: string;
@@ -12,7 +12,7 @@ export class User {
   @Column({ type: 'varchar', length: 32, nullable: false })
   userLastName: string;
 
-  @Column({ type: 'varchar', length: 24, nullable: false })
+  @Column({ type: 'varchar', length: 10, nullable: false })
   username: string;
 
   @Column({ type: 'varchar', length: 32, nullable: false })

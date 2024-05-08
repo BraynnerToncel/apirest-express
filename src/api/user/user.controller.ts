@@ -1,3 +1,4 @@
+import { IUpdateUser } from './../../data/interface/api/user/user.interface';
 import { Request, Response } from "express";
 import { UserService } from "./user.service";
 import { plainToClass, plainToInstance } from "class-transformer";
@@ -12,7 +13,7 @@ export class UserController {
     this.userService = new UserService();
   }
 
-  async createUser(req: Request, res: Response): Promise<void> {
+  async createUser(req: Request, res: Response) {
     try {
       const createUserDto: CreateUserDto = plainToClass(
         CreateUserDto,
@@ -27,7 +28,7 @@ export class UserController {
       }
 
       const { status, message } = await this.userService.createUser(
-        createUserDto
+        req.body
       );
       res.status(status).json(message);
     } catch (error) {
@@ -36,64 +37,62 @@ export class UserController {
     }
   }
 
-  async getUsers(req: Request, res: Response): Promise<void> {
+  async findAllUser(req: Request, res: Response) {
     try {
-      const { status, message } = await this.userService.getUsers();
-      res.status(status).json({ message });
-    } catch (error) {
-      console.error("Error getting users:", error);
-      res.status(500).json({ status: 500, message: "Error getting users" });
+      const result = await this.userService.findAllUsers();
+      res.status(result.status).json(result.message);
+    } catch (err) {
+      console.error("Error fetching user:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 
-  async getUserById(req: Request, res: Response): Promise<void> {
+  async findUserById(req: Request, res: Response) {
     try {
       const userId: string = req.params.userId;
-      const { status, message } = await this.userService.getUserById(userId);
-
-      res.status(status).json({ message });
-    } catch (error) {
-      console.error("Error getting user by ID:", error);
-      res
-        .status(500)
-        .json({ status: 500, message: "Error getting user by ID" });
+      const result = await this.userService.findUserById(userId);
+      res.status(result.status).json(result.message);
+    } catch (err) {
+      console.error("Error fetching user by ID:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
   }
 
-  async updateUser(req: Request, res: Response): Promise<void> {
+  async updateUser(req: Request, res: Response) {
     try {
       const userId: string = req.params.userId;
-      const updateUserDto: UpdateUserDto = plainToInstance(
-        UpdateUserDto,
-        req.body
-      );
-
-      const errors: Array<ValidationError> = await validate(updateUserDto);
-
+      const UpdateUsersDto: IUpdateUser = plainToClass(UpdateUserDto, req.body)
+      const errors: Array<ValidationError> = await validate(UpdateUserDto);
       if (errors.length > 0) {
-        res.status(400).json({ errors });
-        return;
+        return res.status(400).json({ errors });
       }
-
-      const { status, message } = await this.userService.updateUser(
+      const { status, message } = await this.userService.updateUsers(
         userId,
-        updateUserDto
+        UpdateUsersDto
+
       );
-      res.status(status).json(message);
-    } catch (error) {
-      console.error("Error updating user:", error);
-      res.status(500).json({ status: 500, message: "Error updating user" });
+      return res.status(status).json(message);
+    } catch (err) {
+      console.error("Error updating user:", err);
+      return res.status(500).json({ message: "Internal server error" });
     }
   }
 
-  async deleteUser(req: Request, res: Response): Promise<void> {
+  async deleteUser(req: Request, res: Response) {
     try {
       const userId: string = req.params.userId;
-      const { status, message } = await this.userService.deleteUser(userId);
-      res.status(status).json(message);
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      res.status(500).json({ status: 500, message: "Error deleting user" });
+      const result = await this.userService.deleteUsers(userId);
+      res.status(result.status).json(result.message);
+    } catch (err) {
+      console.error("Error deleting user:", err);
+      res.status(500).json({ message: "Internal server error" });
     }
   }
+
+
+
+
+
+
+
 }

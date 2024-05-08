@@ -11,7 +11,7 @@ import {
 export class CreateUserDto {
   @IsString()
   @MinLength(3)
-  @MaxLength(24)
+  @MaxLength(100)
   username: string;
 
   @IsString()
@@ -36,6 +36,6 @@ export class CreateUserDto {
   @IsBoolean()
   userState: boolean;
 
-  @IsUUID()
-  roleId: string;
+  @IsString()
+  role: string;
 }

@@ -1,5 +1,5 @@
+import { Role } from './../../data/entities/api/role/role.entity';
 import { Repository } from "typeorm";
-import { Role } from "../../data/entities/api/role/role.entity";
 import { AppDataSource } from "../../data/database-config/data-source";
 import { ICreateRole, IRole, IUpdateRole } from "../../data/interface/api/role/role.interface";
 import { IRespose } from "../../data/interface/response/response";
@@ -16,11 +16,11 @@ export class RoleService {
       const { roleId }: IRole = await this.roleRepository.save({
         ...newRole,
       });
-      const role = await this.roleRepository.findOne({ where: { roleId } });
-      if (!role) {
+      const Role = await this.roleRepository.findOne({ where: { roleId } });
+      if (!Role) {
         return { status: 404, message: 'Error al crear el rol' };
       }
-      return { status: 200, message: role };
+      return { status: 200, message: Role };
     } catch (error) {
       console.error("Error creating role:", error);
       return { status: 500, message: 'Internal server error' };
@@ -59,12 +59,16 @@ export class RoleService {
 
       await this.roleRepository.update({ roleId }, updatedRole);
       const role = await this.roleRepository.findOne({ where: { roleId } });
+      if (!role) {
+        return { status: 404, message: 'Error al actualizar el rol' };
+      }
       return { status: 200, message: role };
     } catch (error) {
       console.error("Error updating role:", error);
       return { status: 500, message: 'Internal server error' };
     }
   }
+
 
   async deleteRole(roleId: string): Promise<IRespose<string>> {
     try {

@@ -19,13 +19,14 @@ export class RoleController {
       if (errors.length > 0) {
         return res.status(400).json({ errors });
       }
-      const { status, message } = await this.roleService.createRole(newRole);
+      const { status, message } = await this.roleService.createRole(req.body);
       return res.status(status).json(message);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Internal server error" });
     }
   }
+  
   async findAllRoles(req: Request, res: Response) {
     try {
       const result = await this.roleService.findAllRoles();

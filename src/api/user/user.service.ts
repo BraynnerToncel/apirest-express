@@ -1,7 +1,7 @@
+import { User } from './../../data/entities/api/user/user.entity';
 import { IRespose } from './../../data/interface/response/response';
-import bcrypt from 'bcryptjs';
+import * as bcrypt from 'bcrypt';
 import { Repository } from 'typeorm';
-import { User } from '../../data/entities/api/user/user.entity';
 import { AppDataSource } from '../../data/database-config/data-source';
 import { ICreateUser, IUpdateUser, IUser } from '../../data/interface/api/user/user.interface';
 
@@ -14,69 +14,99 @@ export class UserService {
 
   async createUser(newUser: ICreateUser): Promise<IRespose<IUser>> {
     try {
-      console.log('newUser :>> ', newUser);
+      console.log('newUser  :>> ', newUser.userPassword);
       const encryptedPassword: string = await bcrypt.hash(newUser.userPassword, 10);
       newUser.userPassword = encryptedPassword;
       newUser.userFullName = newUser.userEmail.toLocaleLowerCase();
-      newUser.userState= newUser.userState??true
-      console.log('newUser :>> ', newUser);
+
+      console.log(newUser)
+
+      const { userId }: IUser = await this.userRepository.save({ ...newUser });
 
 
-      const {userId} = await this.userRepository.save(newUser);
-      const user = await this.userRepository.findOne({where:{userId}});
-      if(!user){
-        return {status:500,message:'error al crear el user'}
+      const user = await this.userRepository.findOne({ 
+        relations: { role: true }, 
+        loadEagerRelations: false,
+        select:  {userPassword:false} ,
+         where: { userId } });
+
+      if (!user) {
+        return { status: 500, message: 'error al crear el user' }
       }
 
-      return { status: 200, message: {userPassword:undefined,...user} };
+      return { status: 200, message: user };
     } catch (error) {
       console.error("Error creating user:", error);
       return { status: 500, message: 'Error creating user' };
     }
   }
 
-  async getUsers(): Promise<IRespose<Array<IUser>>> {
 
-    const users= await this.userRepository.find();
-    return{status: 200, message:users}
-
-  }
-
-  async getUserById(userId: string): Promise<IRespose<User>> {
-    const user:IUser=await this.userRepository.findOne({where:{userId}});
-    if(!user){
-      return { status: 404, message: 'User not found' };
-    }
-    return { status: 200,message:user}
-  }
-
-  async updateUser(userId:string, updatedUser: IUpdateUser): Promise<IRespose<IUser>> {
+  async findAllUsers(): Promise<IRespose<Array<IUser>>> {
     try {
-      const existingUser = await this.userRepository.findOne({where:{userId}});
+      const users = await this.userRepository.find({ 
+        relations: { role: true }, 
+        loadEagerRelations: false, 
+        select:  {userPassword:false} });
+      return { status: 200, message: users };
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      return { status: 500, message: 'Internal server error' };
+    }
+  }
+
+  async findUserById(userId: string): Promise<IRespose<IUser>> {
+    try {
+      const user = await this.userRepository.findOne({
+         relations: { role: true }, 
+         loadEagerRelations: false,
+        select:   {userPassword:false} ,
+
+         where: { userId } });
+      if (!user) {
+        return { status: 404, message: 'user not found' };
+      }
+      return { status: 200, message: user };
+    } catch (error) {
+      console.error("Error fetching user by ID:", error);
+      return { status: 500, message: 'Internal server error' };
+    }
+  }
+
+  async updateUsers(userId: string, updatedUser: IUpdateUser): Promise<IRespose<IUser>> {
+    try {
+      const existingUser = await this.userRepository.findOne({ relations: { role: true }, loadEagerRelations: false, where: { userId } });
       if (!existingUser) {
-        return { status: 404, message: 'User not found' };
+        return { status: 404, message: 'user not found' };
       }
 
-      const savedUser = await this.userRepository.save({ ...existingUser, ...updatedUser });
-      return { status: 200, message: savedUser };
+      await this.userRepository.update({ userId }, updatedUser);
+      const permission = await this.userRepository.findOne({ where: { userId } });
+
+      if (!permission) {
+        return { status: 404, message: 'Error al actualizar el user' };
+      }
+      return { status: 200, message: permission };
+
     } catch (error) {
       console.error("Error updating user:", error);
-      return { status: 500, message: 'Error updating user' };
+      return { status: 500, message: 'Internal server error' };
     }
   }
 
-  async deleteUser(userId: string): Promise<IRespose<String>> {
+  async deleteUsers(userId: string): Promise<IRespose<string>> {
     try {
-      const existingUser = await this.userRepository.findOne({where:{userId}});
-      if (!existingUser) {
-        return { status: 404, message: 'User not found' };
+      const deleteResult = await this.userRepository.delete({ userId });
+      if (deleteResult.affected === 0) {
+        return { status: 404, message: 'user not found' };
       }
-
-      await this.userRepository.delete(userId);
       return { status: 200, message: userId };
     } catch (error) {
       console.error("Error deleting user:", error);
-      return { status: 500, message: 'Error deleting user' };
+      return { status: 500, message: 'Internal server error' };
     }
   }
+
+
+
 }

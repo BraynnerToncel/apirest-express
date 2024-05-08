@@ -1,5 +1,5 @@
 export class IAuth{
-  userName:string;
+  username:string;
   userPassword:string;
   remenber?:boolean;
 }
